@@ -18,7 +18,7 @@
     // call a method in Obj-C: [ObjectName methodName];
     // call a method in Obj-C with a parameter: [ObjectName methodName:parameter];
     // note: physicsNode does not have a first uppercase letter because it is actually the CCPhysicsNode* object stored in a variable.
-    [self addObstacle]
+    [self addObstacle];
 }
 
 -(void)update:(CCTime)delta
