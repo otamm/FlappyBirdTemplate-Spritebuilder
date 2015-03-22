@@ -18,12 +18,28 @@
     // call a method in Obj-C: [ObjectName methodName];
     // call a method in Obj-C with a parameter: [ObjectName methodName:parameter];
     // note: physicsNode does not have a first uppercase letter because it is actually the CCPhysicsNode* object stored in a variable.
-    [self addObstacle];
+    [self addObstacle]; // adds obstacles as soon as the game starts
+    
+    float timeSinceObstacle = 0.0f;
 }
 
--(void)update:(CCTime)delta
-{
-    // put update code here
+- (void)update:(CCTime)delta { // the game's "update loop" (or "run loop"), checks for stuff like points, character health, score, etc which runs 'X' times per frame (varies, if game is slowing down, probably the game loop is running at a way too high rate)
+
+    // this will be run every frame.
+    // delta is the time that has elapsed since the last time it was run. This is usually 1/60, but can be bigger if the game slows down
+    
+    // Increment the time since the last obstacle was added
+    timeSinceObstacle += delta; // delta is approximately 1/60th of a second
+    
+    // Check to see if two seconds have passed
+    if (timeSinceObstacle > 2.0f)
+    {
+        // Add a new obstacle
+        [self addObstacle];
+        
+        // Then reset the timer.
+        timeSinceObstacle = 0.0f;
+    }
 }
 
 // put new methods here
