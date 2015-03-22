@@ -24,6 +24,8 @@ typedef NS_ENUM(NSInteger, DrawingOrder) {
     //  \/\/\/\/ instance of the bird
     Character*     character;  // character node; both char and physics nodes reference pre-defined nodes.
     CCPhysicsNode* physicsNode; // physics node; both are also referenced in the GamePlayScene (main class), which makes them available in the whole game.
+    
+    float timeSinceObstacle; // initializes timer
 }
 
 -(void) initialize;

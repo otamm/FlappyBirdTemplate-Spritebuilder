@@ -8,6 +8,7 @@
 {
     // your code here
     
+    // variables initialized in GamePlayScene.h
     // loads a character from the 'Character' CCB file.
     // CCB files are created by SpriteBuilder and describe appearance and properties of in-game objects like the Flappy Bird character.
     character = (Character*)[CCBReader load:@"Character"]; // initializes the character
@@ -19,8 +20,7 @@
     // call a method in Obj-C with a parameter: [ObjectName methodName:parameter];
     // note: physicsNode does not have a first uppercase letter because it is actually the CCPhysicsNode* object stored in a variable.
     [self addObstacle]; // adds obstacles as soon as the game starts
-    
-    float timeSinceObstacle = 0.0f;
+    timeSinceObstacle = 0.0f; // attributes value to initialized variable
 }
 
 - (void)update:(CCTime)delta { // the game's "update loop" (or "run loop"), checks for stuff like points, character health, score, etc which runs 'X' times per frame (varies, if game is slowing down, probably the game loop is running at a way too high rate)
