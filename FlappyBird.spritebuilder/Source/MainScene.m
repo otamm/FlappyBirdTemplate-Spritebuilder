@@ -9,6 +9,19 @@
 #import "MainScene.h"
 #import "Obstacle.h"
 
+@interface CGPointObject : NSObject // needs to be added at the beginning of file because the interface for CGPointObject is hidden in CCParallaxNode.m (a default class implemented in Cocos2d). Outline is added so XCode can identify the class and access its properties (like offset) later on.
+{
+    CGPoint _ratio;
+    CGPoint _offset;
+    CCNode *__unsafe_unretained _child; // weak ref
+}
+@property (nonatomic,readwrite) CGPoint ratio;
+@property (nonatomic,readwrite) CGPoint offset;
+@property (nonatomic,readwrite,unsafe_unretained) CCNode *child;
++(id) pointWithCGPoint:(CGPoint)point offset:(CGPoint)offset;
+-(id) initWithCGPoint:(CGPoint)point offset:(CGPoint)offset;
+@end
+
 @implementation MainScene {
     CCNode *_ground1;
     CCNode *_ground2;
@@ -21,6 +34,28 @@
     CCNode *_bush1; // referenced in SpriteBuilder
     CCNode *_bush2;
     NSArray *_bushes;
+    
+    // adds parallax
+    _parallaxBackground = [CCParallaxNode node];
+    [_parallaxContainer addChild:_parallaxBackground];
+    
+    // Note that the bush ratio is larger than the cloud
+    _bushParallaxRatio = ccp(0.9, 1);
+    _cloudParallaxRatio = ccp(0.5, 1);
+    
+    for (CCNode *bush in _bushes) {
+        CGPoint offset = bush.position;
+        [self removeChild:bush];
+        [_parallaxBackground addChild:bush z:0 parallaxRatio:_bushParallaxRatio positionOffset:offset];
+    }
+    
+    for (CCNode *cloud in _clouds) {
+        CGPoint offset = cloud.position;
+        [self removeChild:cloud];
+        [_parallaxBackground addChild:cloud z:0 parallaxRatio:_cloudParallaxRatio positionOffset:offset];
+    }
+    // ends adding parallax
+    // SpriteBuilder does not have a native ParallaxNode, so we'll apply the ParallaxNode to the bushes and clouds with code.
     
     NSTimeInterval _sinceTouch;
     
@@ -35,6 +70,11 @@
     int points;
 }
 
+CGPoint _cloudParallaxRatio; // parallax for cloud, below is the one for bush
+CGPoint _bushParallaxRatio; // parallax ratio of (1,1) means that the object moves with the layer in both x and y axis. In the game, both clouds and bushes will only move in the 'x' direction so that's what will be changed; clouds are farther away from the bird as the bushes, so they'll move at a slower ratio, giving a better impression of realism.
+
+CCNode *_parallaxContainer;
+CCParallaxNode *_parallaxBackground;
 
 - (void)didLoadFromCCB {
     self.userInteractionEnabled = TRUE;
@@ -156,8 +196,50 @@
         }
     }
     
+    // implements parallax, applying movement at a diferent ration for farther away objects. Instead of just changing the position (like the commented out methods below the parallax implementation), the parallax moves all the stuff in the very same process but at different rations.
+    
+    _parallaxBackground.position = ccp(_parallaxBackground.position.x - (character.physicsBody.velocity.x * delta), _parallaxBackground.position.y);
+    
+    // loop the bushes
+    for (CCNode *bush in _bushes) {
+        // get the world position of the bush
+        CGPoint bushWorldPosition = [_parallaxBackground convertToWorldSpace:bush.position];
+        // get the screen position of the bush
+        CGPoint bushScreenPosition = [self convertToNodeSpace:bushWorldPosition];
+        
+        // if the left corner is one complete width off the screen,
+        // move it to the right
+        if (bushScreenPosition.x <= (-1 * bush.contentSize.width)) {
+            for (CGPointObject *child in _parallaxBackground.parallaxArray) {
+                if (child.child == bush) {
+                    child.offset = ccp(child.offset.x + 2*bush.contentSize.width, child.offset.y);
+                }
+            }
+        }
+    }
+    
+    // loop the clouds
+    for (CCNode *cloud in _clouds) {
+        // get the world position of the cloud
+        CGPoint cloudWorldPosition = [_parallaxBackground convertToWorldSpace:cloud.position];
+        // get the screen position of the cloud
+        CGPoint cloudScreenPosition = [self convertToNodeSpace:cloudWorldPosition];
+        
+        // if the left corner is one complete width off the screen,
+        // move it to the right
+        if (cloudScreenPosition.x <= (-1 * cloud.contentSize.width)) {
+            for (CGPointObject *child in _parallaxBackground.parallaxArray) {
+                if (child.child == cloud) {
+                    child.offset = ccp(child.offset.x + 2*cloud.contentSize.width, child.offset.y);
+                }
+            }
+        }
+    }
+    // ends of parallax implementation
+    
+    /* SUBSTITUTED BY PARALLAX METHODS ABOVE
     // move and loop the bushes
-    // once the bush, cloud, ground, etc has its rightmost horizontal point at the leftmost position in the screen, the object is reinitialized just 'outside' the screen, with the leftmost point at the screen's rightmost point. 
+    // once the bush, cloud, ground, etc has its rightmost horizontal point at the leftmost position in the screen, the object is reinitialized just 'outside' the screen, with the leftmost point at the screen's rightmost point.
     
     for (CCNode *bush in _bushes) {
         // move the bush
@@ -184,7 +266,7 @@
             cloud.position = ccp(cloud.position.x +
                                  2 * cloud.contentSize.width, cloud.position.y);
         }
-    }
+    } */
     
     NSMutableArray *offScreenObstacles = nil;
     
