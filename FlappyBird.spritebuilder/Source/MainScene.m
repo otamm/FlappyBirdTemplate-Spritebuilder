@@ -23,6 +23,13 @@
 @end
 
 @implementation MainScene {
+    
+    CGPoint _cloudParallaxRatio; // parallax for cloud, below is the one for bush
+    CGPoint _bushParallaxRatio; // parallax ratio of (1,1) means that the object moves with the layer in both x and y axis. In the game, both clouds and bushes will only move in the 'x' direction so that's what will be changed; clouds are farther away from the bird as the bushes, so they'll move at a slower ratio, giving a better impression of realism.
+    
+    CCNode *_parallaxContainer;
+    CCParallaxNode *_parallaxBackground;
+    
     CCNode *_ground1;
     CCNode *_ground2;
     NSArray *_grounds;
@@ -37,7 +44,7 @@
     
     // adds parallax
     _parallaxBackground = [CCParallaxNode node];
-    [_parallaxContainer addChild:_parallaxBackground];
+    [parallaxContainer addChild:_parallaxBackground];
     
     // Note that the bush ratio is larger than the cloud
     _bushParallaxRatio = ccp(0.9, 1);
@@ -69,12 +76,6 @@
     
     int points;
 }
-
-CGPoint _cloudParallaxRatio; // parallax for cloud, below is the one for bush
-CGPoint _bushParallaxRatio; // parallax ratio of (1,1) means that the object moves with the layer in both x and y axis. In the game, both clouds and bushes will only move in the 'x' direction so that's what will be changed; clouds are farther away from the bird as the bushes, so they'll move at a slower ratio, giving a better impression of realism.
-
-CCNode *_parallaxContainer;
-CCParallaxNode *_parallaxBackground;
 
 - (void)didLoadFromCCB {
     self.userInteractionEnabled = TRUE;
