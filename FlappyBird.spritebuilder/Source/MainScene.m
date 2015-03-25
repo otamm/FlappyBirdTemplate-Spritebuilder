@@ -23,13 +23,6 @@
 @end
 
 @implementation MainScene {
-    
-    CGPoint _cloudParallaxRatio; // parallax for cloud, below is the one for bush
-    CGPoint _bushParallaxRatio; // parallax ratio of (1,1) means that the object moves with the layer in both x and y axis. In the game, both clouds and bushes will only move in the 'x' direction so that's what will be changed; clouds are farther away from the bird as the bushes, so they'll move at a slower ratio, giving a better impression of realism.
-    
-    CCNode *_parallaxContainer;
-    CCParallaxNode *_parallaxBackground;
-    
     CCNode *_ground1;
     CCNode *_ground2;
     NSArray *_grounds;
@@ -42,9 +35,39 @@
     CCNode *_bush2;
     NSArray *_bushes;
     
+    // SpriteBuilder does not have a native ParallaxNode, so we'll apply the ParallaxNode to the bushes and clouds with code.
+    
+    NSTimeInterval _sinceTouch;
+    
+    NSMutableArray *_obstacles;
+    
+    CCButton *_restartButton;
+    
+    BOOL _gameOver;
+    CCLabelTTF *_scoreLabel;
+    CCLabelTTF *_nameLabel;
+    
+    int points;
+}
+
+CGPoint _cloudParallaxRatio; // parallax for cloud, below is the one for bush
+CGPoint _bushParallaxRatio; // parallax ratio of (1,1) means that the object moves with the layer in both x and y axis. In the game, both clouds and bushes will only move in the 'x' direction so that's what will be changed; clouds are farther away from the bird as the bushes, so they'll move at a slower ratio, giving a better impression of realism.
+
+CCNode *_parallaxContainer;
+CCParallaxNode *_parallaxBackground;
+
+- (void)didLoadFromCCB {
+    self.userInteractionEnabled = TRUE;
+    
+    _grounds = @[_ground1, _ground2];
+    
+    _clouds = @[_cloud1, _cloud2]; // initializes both elements directly from SpriteBuilder
+    
+    _bushes = @[_bush1, _bush2];
+    
     // adds parallax
     _parallaxBackground = [CCParallaxNode node];
-    [parallaxContainer addChild:_parallaxBackground];
+    [_parallaxContainer addChild:_parallaxBackground];
     
     // Note that the bush ratio is larger than the cloud
     _bushParallaxRatio = ccp(0.9, 1);
@@ -61,30 +84,7 @@
         [self removeChild:cloud];
         [_parallaxBackground addChild:cloud z:0 parallaxRatio:_cloudParallaxRatio positionOffset:offset];
     }
-    // ends adding parallax
-    // SpriteBuilder does not have a native ParallaxNode, so we'll apply the ParallaxNode to the bushes and clouds with code.
-    
-    NSTimeInterval _sinceTouch;
-    
-    NSMutableArray *_obstacles;
-    
-    CCButton *_restartButton;
-    
-    BOOL _gameOver;
-    CCLabelTTF *_scoreLabel;
-    CCLabelTTF *_nameLabel;
-    
-    int points;
-}
-
-- (void)didLoadFromCCB {
-    self.userInteractionEnabled = TRUE;
-    
-    _grounds = @[_ground1, _ground2];
-    
-    _clouds = @[_cloud1, _cloud2]; // initializes both elements directly from SpriteBuilder
-    
-    _bushes = @[_bush1, _bush2];
+    // finishes implementation of parallax
     
     for (CCNode *ground in _grounds) {
         // set collision txpe
@@ -197,7 +197,7 @@
         }
     }
     
-    // implements parallax, applying movement at a diferent ration for farther away objects. Instead of just changing the position (like the commented out methods below the parallax implementation), the parallax moves all the stuff in the very same process but at different rations.
+    // implements parallax, applying movement at a diferent ration for farther away objects. Instead of just changing the position (like the commented out methods below the parallax implementation), the parallax moves all the stuff in the very the same process but at different rations.
     
     _parallaxBackground.position = ccp(_parallaxBackground.position.x - (character.physicsBody.velocity.x * delta), _parallaxBackground.position.y);
     
